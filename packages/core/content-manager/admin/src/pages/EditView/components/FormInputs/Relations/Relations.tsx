@@ -752,7 +752,11 @@ const RelationModalWithContext = ({
 
   React.useLayoutEffect(() => {
     setTextValue('');
-  }, [fieldValue]);
+    // Clear the server-side search along with the visible text. Otherwise the search still holds
+    // the text from before the selection, and reopening the dropdown fires a new search that
+    // shows the previous (stale) results while it loads.
+    setSearchParams((s) => (s._q === '' && s.page === 1 ? s : { ...s, _q: '', page: 1 }));
+  }, [fieldValue, setSearchParams]);
 
   const handleSearch = async (search: string) => {
     setSearchParams((s) => ({ ...s, _q: search, page: 1 }));

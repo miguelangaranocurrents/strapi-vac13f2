@@ -122,13 +122,18 @@ const relationsApi = contentManagerApi.injectEndpoints({
       },
       serializeQueryArgs: (args) => {
         const { endpointName, queryArgs } = args;
+        /**
+         * Every search param except pagination identifies the result set. Picking only some of
+         * them (e.g. leaving out the source `id`, `locale` or `status`) lets two fields that target
+         * the same model share one cache entry, so one field would show another's options.
+         */
+        const params: FindAvailable.Request['query'] = queryArgs.params ?? {};
+        const { page: _page, pageSize: _pageSize, ...searchParams } = params;
         return {
           endpointName,
           model: queryArgs.model,
           targetField: queryArgs.targetField,
-          _q: queryArgs.params?._q,
-          idsToOmit: queryArgs.params?.idsToOmit,
-          idsToInclude: queryArgs.params?.idsToInclude,
+          params: searchParams,
         };
       },
       merge: (currentCache, newItems) => {
